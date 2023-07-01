@@ -1,8 +1,5 @@
 /**************************************************************************
  * https://github.com/Jvde2019/RP_Pico_Timer_DDM427/
- * 
- * SSD1306 checkout
- * 
  */
 
 #include <SPI.h>
