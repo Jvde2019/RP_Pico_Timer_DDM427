@@ -247,9 +247,9 @@ void menu() {
     }
     display.setCursor(0, 15);
     display.print("> Frequenz");
-     display.setCursor(40, 15);
+     display.setCursor(70, 15);
     display.print(freq);
-    display.setCursor(80, 15);
+    display.setCursor(95, 15);
     display.print("Hz");
     display.setCursor(0, 25);
     if (menuitem4 == 2) {
@@ -295,20 +295,37 @@ void menu() {
     right = false;
     cw++;
     inc--;
-    if (page == 1){
+    switch (page){
+      case 1:
       menuitem++;
       if (menuitem == 5) { menuitem = 1; }
-    }
-     if (page == 4){
+      break;
+      case 2:
+      if (page == 4){
       menuitem4++;
       if (menuitem4 == 4) { menuitem4 = 1; }
-    }
-    if (page == 4 && menuitem4 == 1){
-      freq = freq-10;
-    }
-    if (page == 4 && menuitem4 == 1){
-      freq = freq-10;
-    }
+      }
+      if (page == 4 && menuitem4 == 1){
+        freq = freq-10;
+      }
+      if (page == 4 && menuitem4 == 1){
+        freq = freq-10;
+      }
+
+    // if (page == 1){
+    //   menuitem++;
+    //   if (menuitem == 5) { menuitem = 1; }
+    // }
+    //  if (page == 4){
+    //   menuitem4++;
+    //   if (menuitem4 == 4) { menuitem4 = 1; }
+    // }
+    // if (page == 4 && menuitem4 == 1){
+    //   freq = freq-10;
+    // }
+    // if (page == 4 && menuitem4 == 1){
+    //   freq = freq-10;
+   }
   }
 
   if (buttonPress) {
