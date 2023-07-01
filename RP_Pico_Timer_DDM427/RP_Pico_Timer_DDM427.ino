@@ -63,12 +63,8 @@ void rotaryMoved() {
   a = digitalRead(6);
   b = digitalRead(7);
   if (a == b) {
-    //ccw++;
-    //inc++;
     left = true;
   } else {
-    //cw++;
-    //inc--;
     right = true;
   }
   if (irDir) {
@@ -269,16 +265,6 @@ void menu() {
       display.setTextColor(SSD1306_WHITE);
     }
     display.print("> Exit");
-
-
-
-    // display.setCursor(5, 15);
-    // display.print("FREQ");
-    // display.setTextSize(2);
-    // display.setCursor(10, 25);
-    // display.print(freq);
-    // display.setCursor(65, 25);
-    // display.print("Hz");
     display.setTextSize(2);
     display.display();  
   }
