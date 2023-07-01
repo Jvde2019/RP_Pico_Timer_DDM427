@@ -295,36 +295,36 @@ void menu() {
     right = false;
     cw++;
     inc--;
-    switch (page){
-      case 1:
-      menuitem++;
-      if (menuitem == 5) { menuitem = 1; }
-      break;
-      case 2:
-      if (page == 4){
-      menuitem4++;
-      if (menuitem4 == 4) { menuitem4 = 1; }
-      }
-      if (page == 4 && menuitem4 == 1){
-        freq = freq-10;
-      }
-      if (page == 4 && menuitem4 == 1){
-        freq = freq-10;
-      }
-
-    // if (page == 1){
+    // switch (page){
+    //   case 1:
     //   menuitem++;
     //   if (menuitem == 5) { menuitem = 1; }
-    // }
-    //  if (page == 4){
+    //   break;
+    //   case 2:
+    //   if (page == 4){
     //   menuitem4++;
     //   if (menuitem4 == 4) { menuitem4 = 1; }
-    // }
-    // if (page == 4 && menuitem4 == 1){
-    //   freq = freq-10;
-    // }
-    // if (page == 4 && menuitem4 == 1){
-    //   freq = freq-10;
+    //   }
+    //   if (page == 4 && menuitem4 == 1){
+    //     freq = freq-10;
+    //   }
+    //   if (page == 4 && menuitem4 == 1){
+    //     freq = freq-10;
+    //   }
+
+    if (page == 1){
+      menuitem++;
+      if (menuitem == 5) { menuitem = 1; }
+    }
+     if (page == 4){
+      menuitem4++;
+      if (menuitem4 == 4) { menuitem4 = 1; }
+    }
+    if (page == 4 && menuitem4 == 1){
+      freq = freq-10;
+    }
+    if (page == 4 && menuitem4 == 1){
+      freq = freq-10;
    }
   }
 
