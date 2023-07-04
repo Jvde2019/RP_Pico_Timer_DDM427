@@ -21,7 +21,8 @@
 //#define ROTBut 7  // GPIO7   PIN9   rotary Button
 // Menuvariables
 volatile boolean Menu = false;
-byte page = 1;
+//byte page = 1;
+int page = 1;
 byte menuitem = 1;
 byte menuitem4 = 1;
 // Clockvariables
@@ -52,11 +53,12 @@ bool led_state = false;
 //#define PIN_WIRE_SCL   (22u)
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
+// ISR Button
 void buttonPressed() {
   buttonPress = true;
 }
 
+// ISR Rotary
 void rotaryMoved() {
   // ISR for DDM427 See Datasheet https://hopt-schuler.com/sites/default/files/medien/dokumente/2022-11/miniature_2bit_encoder_427_2022.pdf
   rm = true;
@@ -108,7 +110,6 @@ void loop() {
 
   // Clock
   uhr();
-
   // Rotaryevent ?
   if (rm) {
     Serial.print("Encoder ist cw: ");
@@ -120,9 +121,10 @@ void loop() {
     Serial.println(freq);
     rm = false;
   }
-
+  Eventhandling();
   //display_OLED();
-  menu();
+  // menu();
+  menu_new();
   //  left = false;
   //  right = false;
 }
@@ -165,6 +167,115 @@ void display_Clock() {
   display.print(secz);
   display.print(sece);
   display.display();
+}
+
+// Create Menu Pages handle Rotary & Buttonpres Events
+void menu_new() {
+  switch(page){
+    case 1:
+    // Page 1 Mainmenu
+    // Title
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(15, 0);
+    display.print("MAIN MENU");
+    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
+    display.setCursor(0, 15);
+    if (menuitem == 1) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print("> Settings");
+    display.setCursor(0, 25);
+    if (menuitem == 2) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print("> Test Encoder");
+    if (menuitem == 3) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.setCursor(0, 35);
+    display.print("> LED_state:");
+    if (led_state) {
+      display.print("ON");
+    } else {
+      display.print("OFF");
+    }
+    if (menuitem == 4) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.setCursor(0, 45);
+    display.print("> Clock");
+    break;
+
+    case 2:
+    // Page 2 Encodertest
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(15, 0);
+    display.print("ENC. TEST");
+    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
+    display.setCursor(5, 15);
+    display.print("LEFT      RIGHT");
+    display.setTextSize(2);
+    display.setCursor(10, 25);
+    display.print(cw);
+    display.setCursor(65, 25);
+    display.print(ccw);
+    display.setTextSize(2);
+    display.display();
+    break;
+
+    case 3:
+    // Page 3 Clock
+    display_Clock();
+    break;
+
+    case 4:
+    // Page 4 Settings
+    display.setTextSize(1);
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(15, 0);
+    display.print("SETTINGS");
+    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
+    if (menuitem4 == 1) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.setCursor(0, 15);
+    display.print("> Frequenz");
+     display.setCursor(70, 15);
+    display.print(freq);
+    display.setCursor(95, 15);
+    display.print("Hz");
+    display.setCursor(0, 25);
+    if (menuitem4 == 2) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print("> Duration");
+    display.setCursor(0, 35);
+       if (menuitem4 == 3) {
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print("> Exit");
+    break;
+  }
+  display.display(); 
 }
 
 // Create Menu Pages handle Rotary & Buttonpres Events
@@ -268,64 +379,72 @@ void menu() {
     display.setTextSize(2);
     display.display();  
   }
-
-
+}
+void Eventhandling(){
   // Take action if a new command received from the encoder
   if (left) {
     left = false;
     ccw++;
     inc++;
-    if (page == 1){
+    switch(page){
+      case 1:
       menuitem--;
       if (menuitem == 0) { menuitem = 4; }
-    }
-    if (page == 4){
+      break;
+      case 4:
       menuitem4--;
       if (menuitem4 == 0) { menuitem4 = 3; }
-    }
-    if (page == 4 && menuitem4 == 1){
-      freq = freq+10;
-    }    
-    if (page == 4 && menuitem4 == 2){
-      freq = freq+10;
-    } 
-  }
+      if (menuitem4 == 1) { freq = freq+10;}
+      if (menuitem4 == 2) { freq = freq+10;}
+
+
+    // if (page == 1){
+    //   menuitem--;
+    //   if (menuitem == 0) { menuitem = 4; }
+    // }
+    // if (page == 4){
+    //   menuitem4--;
+    //   if (menuitem4 == 0) { menuitem4 = 3; }
+    // }
+    // if (page == 4 && menuitem4 == 1){
+    //   freq = freq+10;
+    // }    
+    // if (page == 4 && menuitem4 == 2){
+    //   freq = freq+10;
+     } 
+   }
 
   if (right) {
     right = false;
     cw++;
     inc--;
-    // switch (page){
-    //   case 1:
-    //   menuitem++;
-    //   if (menuitem == 5) { menuitem = 1; }
-    //   break;
-    //   case 2:
-    //   if (page == 4){
-    //   menuitem4++;
-    //   if (menuitem4 == 4) { menuitem4 = 1; }
-    //   }
-    //   if (page == 4 && menuitem4 == 1){
-    //     freq = freq-10;
-    //   }
-    //   if (page == 4 && menuitem4 == 1){
-    //     freq = freq-10;
-    //   }
-
-    if (page == 1){
+    switch(page){
+      case 1:
       menuitem++;
       if (menuitem == 5) { menuitem = 1; }
-    }
-     if (page == 4){
+      break;
+      case 4:
+      //if (page == 4)
       menuitem4++;
       if (menuitem4 == 4) { menuitem4 = 1; }
+      
+      if (menuitem4 == 1) { freq = freq-10; }
+      if (menuitem4 == 1) { freq = freq-10; }
+
+  //   if (page == 1){
+  //     menuitem++;
+  //     if (menuitem == 5) { menuitem = 1; }
+  //   }
+  //    if (page == 4){
+  //     menuitem4++;
+  //     if (menuitem4 == 4) { menuitem4 = 1; }
+  //   }
+  //   if (page == 4 && menuitem4 == 1){
+  //     freq = freq-10;
+  //   }
+  //   if (page == 4 && menuitem4 == 1){
+  //     freq = freq-10;
     }
-    if (page == 4 && menuitem4 == 1){
-      freq = freq-10;
-    }
-    if (page == 4 && menuitem4 == 1){
-      freq = freq-10;
-   }
   }
 
   if (buttonPress) {
