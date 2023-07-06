@@ -278,108 +278,6 @@ void menu_new() {
   display.display(); 
 }
 
-// Create Menu Pages handle Rotary & Buttonpres Events
-void menu() {
-  if (page == 1) {
-    display.setTextSize(1);
-    display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(15, 0);
-    display.print("MAIN MENU");
-    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
-    display.setCursor(0, 15);
-    if (menuitem == 1) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.print("> Settings");
-    display.setCursor(0, 25);
-    if (menuitem == 2) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.print("> Test Encoder");
-    if (menuitem == 3) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.setCursor(0, 35);
-    display.print("> LED_state:");
-    if (led_state) {
-      display.print("ON");
-    } else {
-      display.print("OFF");
-    }
-    if (menuitem == 4) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.setCursor(0, 45);
-    display.print("> Clock");
-    if (menuitem == 5) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.display();
-  } else if (page == 2) {
-    display.setTextSize(1);
-    display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(15, 0);
-    display.print("ENC. TEST");
-    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
-    display.setCursor(5, 15);
-    display.print("LEFT      RIGHT");
-    display.setTextSize(2);
-    display.setCursor(10, 25);
-    display.print(cw);
-    display.setCursor(65, 25);
-    display.print(ccw);
-    display.setTextSize(2);
-    display.display();
-  } else if (page == 3) {
-    display_Clock();
-  } else if (page == 4) {
-    display.setTextSize(1);
-    display.clearDisplay();
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(15, 0);
-    display.print("SETTINGS");
-    display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
-    if (menuitem4 == 1) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.setCursor(0, 15);
-    display.print("> Frequenz");
-     display.setCursor(70, 15);
-    display.print(freq);
-    display.setCursor(95, 15);
-    display.print("Hz");
-    display.setCursor(0, 25);
-    if (menuitem4 == 2) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.print("> Duration");
-    display.setCursor(0, 35);
-       if (menuitem4 == 3) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.print("> Exit");
-    display.setTextSize(2);
-    display.display();  
-  }
-}
 void Eventhandling(){
   // Take action if a new command received from the encoder
   if (left) {
@@ -396,21 +294,6 @@ void Eventhandling(){
       if (menuitem4 == 0) { menuitem4 = 3; }
       if (menuitem4 == 1) { freq = freq+10;}
       if (menuitem4 == 2) { freq = freq+10;}
-
-
-    // if (page == 1){
-    //   menuitem--;
-    //   if (menuitem == 0) { menuitem = 4; }
-    // }
-    // if (page == 4){
-    //   menuitem4--;
-    //   if (menuitem4 == 0) { menuitem4 = 3; }
-    // }
-    // if (page == 4 && menuitem4 == 1){
-    //   freq = freq+10;
-    // }    
-    // if (page == 4 && menuitem4 == 2){
-    //   freq = freq+10;
      } 
    }
 
@@ -430,43 +313,54 @@ void Eventhandling(){
       
       if (menuitem4 == 1) { freq = freq-10; }
       if (menuitem4 == 1) { freq = freq-10; }
-
-  //   if (page == 1){
-  //     menuitem++;
-  //     if (menuitem == 5) { menuitem = 1; }
-  //   }
-  //    if (page == 4){
-  //     menuitem4++;
-  //     if (menuitem4 == 4) { menuitem4 = 1; }
-  //   }
-  //   if (page == 4 && menuitem4 == 1){
-  //     freq = freq-10;
-  //   }
-  //   if (page == 4 && menuitem4 == 1){
-  //     freq = freq-10;
     }
   }
 
   if (buttonPress) {
     buttonPress = false;
-    if (page == 1 && menuitem == 1){
-      page = 4;
-    } else if (page == 1 && menuitem == 2) {
+    switch(page){
+      case 1:
+      if (menuitem == 1){page = 4;}  
+      else if (menuitem == 2) {
       page = 2;
       cw = 0;
       ccw = 0;
       inc = 0;
-    } else if (page == 1 && menuitem == 3) {
+      }
+      else if (menuitem == 3) {
       led_state = !led_state;
-      digitalWrite(LED_BUILTIN, led_state);  
-    } else if (page == 1 && menuitem == 4) {
-      page = 3;
-    } else if (page == 2) {
+      digitalWrite(LED_BUILTIN, led_state);
+      } 
+      else if (menuitem == 4) {page = 3;}
+      break;
+      case 2:
       page = 1;
-    } else if (page == 3) {
+      break;
+      case 3:
       page = 1;
-    } else if (page == 4 && menuitem4 == 3) {
-      page = 1;
+      break;
+      case 4:
+      if (menuitem4 == 3){page = 1;}
+      break;
     }
+    // if (page == 1 && menuitem == 1){
+    //   page = 4;
+    // } else if (page == 1 && menuitem == 2) {
+    //   page = 2;
+    //   cw = 0;
+    //   ccw = 0;
+    //   inc = 0;
+    // } else if (page == 1 && menuitem == 3) {
+    //   led_state = !led_state;
+    //   digitalWrite(LED_BUILTIN, led_state);  
+    // } else if (page == 1 && menuitem == 4) {
+    //   page = 3;
+    // } else if (page == 2) {
+    //   page = 1;
+    // } else if (page == 3) {
+    //   page = 1;
+    // } else if (page == 4 && menuitem4 == 3) {
+    //   page = 1;
+    // }
   }
 }
