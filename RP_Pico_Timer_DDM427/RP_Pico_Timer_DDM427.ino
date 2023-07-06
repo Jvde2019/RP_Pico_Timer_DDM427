@@ -254,7 +254,7 @@ void menu_new() {
       display.setTextColor(SSD1306_WHITE);
     }
     display.setCursor(0, 15);
-    display.print("> Frequenz");
+    display.print("> Frequenz ");
      display.setCursor(70, 15);
     display.print(freq);
     display.setCursor(95, 15);
@@ -289,6 +289,7 @@ void Eventhandling(){
       menuitem--;
       if (menuitem == 0) { menuitem = 4; }
       break;
+
       case 4:
       menuitem4--;
       if (menuitem4 == 0) { menuitem4 = 3; }
@@ -306,11 +307,10 @@ void Eventhandling(){
       menuitem++;
       if (menuitem == 5) { menuitem = 1; }
       break;
+
       case 4:
-      //if (page == 4)
       menuitem4++;
-      if (menuitem4 == 4) { menuitem4 = 1; }
-      
+      if (menuitem4 == 4) { menuitem4 = 1; }      
       if (menuitem4 == 1) { freq = freq-10; }
       if (menuitem4 == 1) { freq = freq-10; }
     }
@@ -320,47 +320,52 @@ void Eventhandling(){
     buttonPress = false;
     switch(page){
       case 1:
-      if (menuitem == 1){page = 4;}  
-      else if (menuitem == 2) {
-      page = 2;
-      cw = 0;
-      ccw = 0;
-      inc = 0;
-      }
-      else if (menuitem == 3) {
-      led_state = !led_state;
-      digitalWrite(LED_BUILTIN, led_state);
+      switch(menuitem){
+        case 1:
+        page = 4;
+        break;
+
+        case 2:
+        page = 2;
+        cw = 0;
+        ccw = 0;
+        inc = 0;
+        break;
+
+        case 3:
+        led_state = !led_state;
+        digitalWrite(LED_BUILTIN, led_state);
+        break;
+
+        case 4:
+        page = 3;
+        break;
       } 
-      else if (menuitem == 4) {page = 3;}
+      // if (menuitem == 1){page = 4;}  
+      // else if (menuitem == 2) {
+      // page = 2;
+      // cw = 0;
+      // ccw = 0;
+      // inc = 0;
+      // }
+      // else if (menuitem == 3) {
+      // led_state = !led_state;
+      // digitalWrite(LED_BUILTIN, led_state);
+      // } 
+      // else if (menuitem == 4) {page = 3;}
       break;
+
       case 2:
       page = 1;
       break;
+
       case 3:
       page = 1;
       break;
+
       case 4:
       if (menuitem4 == 3){page = 1;}
       break;
     }
-    // if (page == 1 && menuitem == 1){
-    //   page = 4;
-    // } else if (page == 1 && menuitem == 2) {
-    //   page = 2;
-    //   cw = 0;
-    //   ccw = 0;
-    //   inc = 0;
-    // } else if (page == 1 && menuitem == 3) {
-    //   led_state = !led_state;
-    //   digitalWrite(LED_BUILTIN, led_state);  
-    // } else if (page == 1 && menuitem == 4) {
-    //   page = 3;
-    // } else if (page == 2) {
-    //   page = 1;
-    // } else if (page == 3) {
-    //   page = 1;
-    // } else if (page == 4 && menuitem4 == 3) {
-    //   page = 1;
-    // }
   }
 }
