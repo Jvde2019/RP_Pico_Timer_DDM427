@@ -122,11 +122,7 @@ void loop() {
     rm = false;
   }
   Eventhandling();
-  //display_OLED();
-  // menu();
   menu_new();
-  //  left = false;
-  //  right = false;
 }
 
 void uhr() {
@@ -255,7 +251,7 @@ void menu_new() {
     }
     display.setCursor(0, 15);
     display.print("> Frequenz ");
-     display.setCursor(70, 15);
+    display.setCursor(70, 15);
     display.print(freq);
     display.setCursor(95, 15);
     display.print("Hz");
@@ -341,18 +337,7 @@ void Eventhandling(){
         page = 3;
         break;
       } 
-      // if (menuitem == 1){page = 4;}  
-      // else if (menuitem == 2) {
-      // page = 2;
-      // cw = 0;
-      // ccw = 0;
-      // inc = 0;
-      // }
-      // else if (menuitem == 3) {
-      // led_state = !led_state;
-      // digitalWrite(LED_BUILTIN, led_state);
-      // } 
-      // else if (menuitem == 4) {page = 3;}
+
       break;
 
       case 2:
