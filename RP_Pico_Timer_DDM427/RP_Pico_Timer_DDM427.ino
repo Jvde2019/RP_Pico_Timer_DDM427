@@ -2,7 +2,7 @@
  * https://github.com/Jvde2019/RP_Pico_Timer_DDM427/
  */
 
-#include <SPI.h>
+//#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -45,6 +45,18 @@ volatile uint8_t b = 0;
 volatile boolean right = false;
 volatile boolean left = false;
 
+// Button variables
+bool bt_mov = false;
+volatile boolean bt_irDir = false;
+bool bt_press = false;
+bool bt_releas = false;
+bool bt_shortpress = false;
+bool bt_longpress = false;
+volatile uint8_t bt_c = 0;
+uint32_t bt_timepressed = 0;
+uint32_t bt_timereleased = 0;
+uint32_t bt_deltatime = 0;
+
 bool buttonPress = false;
 bool led_state = false;
 
@@ -57,6 +69,26 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 void buttonPressed() {
   buttonPress = true;
 }
+
+// ISR Button
+// detection of falling and raising edge of Buttonpin
+void buttonEvent(){
+  bt_mov = true;
+  bt_c = digitalRead(11);
+  if (bt_c == false) {
+    bt_press = true;
+  } else {
+    bt_releas = true;
+  }  
+  if (bt_irDir) {
+    attachInterrupt(11, buttonEvent, RISING);
+    bt_irDir = false;
+  } else {
+    attachInterrupt(11, buttonEvent, FALLING);
+    bt_irDir = true;
+  }
+}
+
 
 // ISR Rotary
 void rotaryMoved() {
@@ -85,7 +117,7 @@ void setup() {
   // Rotary Button INPUT_PULLUP GPIO 11 !!
   pinMode(11, INPUT_PULLUP);
   //pinMode(11, INPUT);
-  attachInterrupt(11, buttonPressed, FALLING);
+  attachInterrupt(11, buttonEvent, CHANGE);
   // can be CHANGE or LOW or RISING or FALLING or HIGH
   // Rotary ChanA INPUT_PULLUP GPIO 6 !!
   pinMode(6, INPUT_PULLUP);
@@ -122,6 +154,7 @@ void loop() {
     rm = false;
   }
   Eventhandling();
+  Eventhandling_new();
   menu_new();
 }
 
@@ -131,17 +164,17 @@ void uhr() {
     old_time = act_time;
     //digitalWrite(LED_BUILTIN, HIGH);
     tone(8,freq,200);
-    sece = sece + 1;  // secundeneiner hochzählen
+    sece ++;  // secundeneiner hochzählen
     if (sece > 9) {
       sece = 0;
-      secz = secz + 1;  // secundenzehner hochzählen
+      secz ++;  // secundenzehner hochzählen
       if (secz > 5) {
         secz = 0;
         sece = 0;
-        mine = mine + 1;
+        mine ++;
         if (mine > 9) {
           mine = 0;
-          minz = minz + 1;
+          minz ++;
           if (minz > 5) {
             minz = 0;
           }
@@ -178,38 +211,26 @@ void menu_new() {
     display.print("MAIN MENU");
     display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
     display.setCursor(0, 15);
-    if (menuitem == 1) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
+    if (menuitem == 1) {display.setTextColor(BLACK, WHITE);}
     display.print("> Settings");
     display.setCursor(0, 25);
-    if (menuitem == 2) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
+    display.setTextColor(SSD1306_WHITE);
+    if (menuitem == 2) {display.setTextColor(BLACK, WHITE);}
     display.print("> Test Encoder");
-    if (menuitem == 3) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
-    display.setCursor(0, 35);
+    display.setTextColor(SSD1306_WHITE);
+    if (menuitem == 3) {display.setTextColor(BLACK, WHITE);}
+        display.setCursor(0, 35);
     display.print("> LED_state:");
     if (led_state) {
       display.print("ON");
     } else {
       display.print("OFF");
     }
-    if (menuitem == 4) {
-      display.setTextColor(BLACK, WHITE);
-    } else {
-      display.setTextColor(SSD1306_WHITE);
-    }
+    display.setTextColor(SSD1306_WHITE);
+    if (menuitem == 4) {display.setTextColor(BLACK, WHITE);} 
     display.setCursor(0, 45);
     display.print("> Clock");
+    display.setTextColor(SSD1306_WHITE);
     break;
 
     case 2:
@@ -312,8 +333,8 @@ void Eventhandling(){
     }
   }
 
-  if (buttonPress) {
-    buttonPress = false;
+  if (bt_shortpress) {
+    bt_shortpress = false;
     switch(page){
       case 1:
       switch(menuitem){
@@ -351,6 +372,32 @@ void Eventhandling(){
       case 4:
       if (menuitem4 == 3){page = 1;}
       break;
+    }
+  }
+}
+
+void Eventhandling_new(){
+  // looks for actions detected by ISR
+  // in case of btpress time saved
+  if (bt_press) {
+    bt_timepressed = millis();
+    bt_press = false;
+    tone(8,1000,50);
+  }
+  
+  // in case of bt releas delta T is calculated 
+  // short- and longpress are determinated
+  if (bt_releas) {
+    bt_timereleased = millis();
+    bt_releas = false;
+    bt_deltatime = bt_timereleased - bt_timepressed;
+    if (bt_deltatime < 200) {
+      bt_shortpress = true;
+      bt_longpress = false;
+    }
+    else if(bt_deltatime > 250) {
+      bt_shortpress = false;
+      bt_longpress = true;
     }
   }
 }
