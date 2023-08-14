@@ -34,16 +34,25 @@ uint32_t secz = 0;  // secundenzehner
 uint32_t mine = 0;  // minuteneiner
 uint32_t minz = 0;  // minutenzehner
 // Rotaryvariables
-volatile boolean irDir = false;
-volatile byte ccw = 0;
-volatile byte cw = 0;
-volatile byte inc = 0;
-volatile int freq = 1720;
-bool rm = false;
-volatile uint8_t a = 0;
-volatile uint8_t b = 0;
-volatile boolean right = false;
-volatile boolean left = false;
+bool rt_mov = false;
+volatile boolean rt_right = false;
+volatile boolean rt_left = false;
+volatile boolean rt_irdir = false;
+volatile byte rt_ccw = 0;
+volatile byte rt_cw = 0;
+volatile byte rt_inc = 0;
+volatile uint8_t rt_a = 0;
+volatile uint8_t rt_b = 0;
+
+//volatile boolean rt_irdir = false;
+//volatile byte ccw = 0;
+//volatile byte cw = 0;
+//volatile byte inc = 0;
+//bool rm = false;
+//volatile uint8_t a = 0;
+//volatile uint8_t b = 0;
+//volatile boolean right = false;
+//volatile boolean left = false;
 
 // Button variables
 bool bt_mov = false;
@@ -57,8 +66,13 @@ uint32_t bt_timepressed = 0;
 uint32_t bt_timereleased = 0;
 uint32_t bt_deltatime = 0;
 
+// Statecontrol variables
+uint8_t state = 1;
+bool run = false;
+
 bool buttonPress = false;
 bool led_state = false;
+volatile int freq = 1720;
 
 //Perhaps the following 2 lines are required for the Pico?  Or use 4,5 instead of (6u), (7u)?
 //#define PIN_WIRE_SDA   (21u)
@@ -89,24 +103,23 @@ void buttonEvent(){
   }
 }
 
-
 // ISR Rotary
 void rotaryMoved() {
   // ISR for DDM427 See Datasheet https://hopt-schuler.com/sites/default/files/medien/dokumente/2022-11/miniature_2bit_encoder_427_2022.pdf
-  rm = true;
-  a = digitalRead(6);
-  b = digitalRead(7);
-  if (a == b) {
-    left = true;
+  rt_mov = true;
+  rt_a = digitalRead(6);
+  rt_b = digitalRead(7);
+  if (rt_a == rt_b) {
+    rt_left = true;
   } else {
-    right = true;
+    rt_right = true;
   }
-  if (irDir) {
+  if (rt_irdir) {
     attachInterrupt(6, rotaryMoved, RISING);
-    irDir = false;
+    rt_irdir = false;
   } else {
     attachInterrupt(6, rotaryMoved, FALLING);
-    irDir = true;
+    rt_irdir = true;
   }
 }
 
@@ -129,7 +142,6 @@ void setup() {
   //pinMode(7, INPUT);
   pinMode(8, OUTPUT_8MA);
 
-
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -139,19 +151,18 @@ void setup() {
 }
 
 void loop() {
-
   // Clock
   uhr();
   // Rotaryevent ?
-  if (rm) {
-    Serial.print("Encoder ist cw: ");
-    Serial.print(cw);
-    Serial.print(" , ccw:   ");
-    Serial.print(ccw);
-    Serial.print(" , inc:  ");
-    Serial.println(inc);
+  if (rt_mov) {
+    Serial.print("Encoder ist rt_cw: ");
+    Serial.print(rt_cw);
+    Serial.print(" , rt_ccw:   ");
+    Serial.print(rt_ccw);
+    Serial.print(" , rt_inc:  ");
+    Serial.println(rt_inc);
     Serial.println(freq);
-    rm = false;
+    rt_mov = false;
   }
   Eventhandling();
   Eventhandling_new();
@@ -245,9 +256,9 @@ void menu_new() {
     display.print("LEFT      RIGHT");
     display.setTextSize(2);
     display.setCursor(10, 25);
-    display.print(cw);
+    display.print(rt_cw);
     display.setCursor(65, 25);
-    display.print(ccw);
+    display.print(rt_ccw);
     display.setTextSize(2);
     display.display();
     break;
@@ -297,10 +308,10 @@ void menu_new() {
 
 void Eventhandling(){
   // Take action if a new command received from the encoder
-  if (left) {
-    left = false;
-    ccw++;
-    inc++;
+  if (rt_left) {
+    rt_left = false;
+    rt_ccw++;
+    rt_inc++;
     switch(page){
       case 1:
       menuitem--;
@@ -315,10 +326,10 @@ void Eventhandling(){
      } 
    }
 
-  if (right) {
-    right = false;
-    cw++;
-    inc--;
+  if (rt_right) {
+    rt_right = false;
+    rt_cw++;
+    rt_inc--;
     switch(page){
       case 1:
       menuitem++;
@@ -344,9 +355,9 @@ void Eventhandling(){
 
         case 2:
         page = 2;
-        cw = 0;
-        ccw = 0;
-        inc = 0;
+        rt_cw = 0;
+        rt_ccw = 0;
+        rt_inc = 0;
         break;
 
         case 3:
@@ -401,3 +412,96 @@ void Eventhandling_new(){
     }
   }
 }
+
+void statecontrol(){
+  switch(state){
+    case 1:  // Mainmenu Item 1
+    if(rt_right){
+      state = 2;
+      Serial.println(state);
+    } 
+    break;
+
+    case 2:  // Clock stopped Setting sece digit 0 
+    if (rt_right){
+      state = 3;
+      bt_shortpress = false;
+      //digit = 1;
+      Serial.println(state);      
+    }  
+    break;
+
+    case 3:  // Clock stopped Setting cl_secz digit 1
+    if (rt_right) {
+      rt_right = false;
+      //cl_secz --;  // secundenzehner runterzählen
+      //if (cl_secz < 0) {cl_secz = 5; }
+    }
+    if (rt_left) {
+      rt_left = false;
+      //cl_secz ++;  // secundenzehner hochzählen
+      //if (cl_secz == 6) {cl_secz = 0;} 
+    }     
+    if (bt_shortpress){
+      state = 4;
+      bt_shortpress = false;
+      //digit = 2;
+      Serial.println(state);      
+    }  
+    break;
+
+    case 4:  // Clock stopped Setting cl_mine digit 2
+    if (rt_right) {
+      rt_right = false;
+      //cl_mine --;
+      //if (cl_mine < 0) {cl_mine = 9;}  
+    } 
+    if (rt_left) {
+      rt_left = false;
+      //cl_mine ++;  // secundeneiner hochzählen
+      //if (cl_mine == 10) {cl_mine = 0;} 
+    }             
+    if (bt_shortpress){
+      state = 5;
+      bt_shortpress = false;
+      //digit = 3;
+      Serial.println(state);      
+    }    
+    break;
+
+    case 5:  // Clock stopped Setting cl_minz digit 3
+    if (rt_right) {
+      rt_right = false;
+      //cl_minz --;
+      //if (cl_minz < 0) {cl_minz = 5;} 
+    }   
+    if (rt_left) {
+      rt_left = false;
+      //cl_minz ++;  // secundeneiner hochzählen
+      //if (cl_minz == 6) {cl_minz = 0;} 
+    }          
+    if (bt_shortpress){
+      state = 6;
+      bt_shortpress = false;
+      //digit = 4;
+      Serial.println(state);      
+    }    
+    break;
+
+    case 6:  // Clock running wait for Alarm reached
+    run = true;
+    if (bt_longpress){
+      state = 1;
+      run = false;
+    }
+    //if (cl_sece == 0 && cl_secz == 0  && cl_mine == 0 && cl_minz == 0){
+      run = false;
+      //bz_state = true;
+      if (bt_shortpress){
+        state = 1;
+        //bz_state = false;
+        //bz_activ = false;
+      }
+    }
+  }   
+
