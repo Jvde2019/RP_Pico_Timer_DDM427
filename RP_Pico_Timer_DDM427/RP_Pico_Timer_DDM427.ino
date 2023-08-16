@@ -153,6 +153,7 @@ void setup() {
 void loop() {
   // Clock
   uhr();
+  statecontrol();
   // Rotaryevent ?
   if (rt_mov) {
     Serial.print("Encoder ist rt_cw: ");
@@ -164,9 +165,11 @@ void loop() {
     Serial.println(freq);
     rt_mov = false;
   }
-  Eventhandling();
+  //Eventhandling();
   Eventhandling_new();
-  menu_new();
+  //menu_new();
+  statecontrol();
+  program_control();
 }
 
 void uhr() {
@@ -207,6 +210,17 @@ void display_Clock() {
   display.print(secz);
   display.print(sece);
   display.display();
+}
+
+void program_control() {
+  switch(state){
+    case 1:
+    display_Clock();
+    break;
+    case 2:
+    menu_new();
+    break;
+  }
 }
 
 // Create Menu Pages handle Rotary & Buttonpres Events
@@ -415,20 +429,38 @@ void Eventhandling_new(){
 
 void statecontrol(){
   switch(state){
-    case 1:  // Mainmenu Item 1
-    if(rt_right){
+    case 1:  // display clock
+    if (bt_shortpress){
       state = 2;
-      Serial.println(state);
-    } 
+      bt_shortpress = false;
+      run = false;
+    }
     break;
 
-    case 2:  // Clock stopped Setting sece digit 0 
-    if (rt_right){
-      state = 3;
+    case 2:  // display Mainmenu
+    if (bt_shortpress){
+      state = 1;
       bt_shortpress = false;
       //digit = 1;
-      Serial.println(state);      
-    }  
+      Serial.println(state);
+    } 
+    if (bt_longpress){
+      state = 3;
+      page = 4;
+      bt_longpress = false;
+      //digit = 1;
+      Serial.println(state);
+    } 
+    if (rt_right){
+      rt_right = false;
+      menuitem ++;
+      if (menuitem == 5) { menuitem = 1; }
+    }
+    if (rt_left){
+      rt_left = false;
+      menuitem --;
+      if (menuitem == 0) { menuitem = 4; }
+    }    
     break;
 
     case 3:  // Clock stopped Setting cl_secz digit 1
