@@ -23,7 +23,7 @@
 volatile boolean Menu = false;
 //byte page = 1;
 int page = 1;
-byte menuitem = 1;
+int menuitem = 1;
 byte menuitem4 = 1;
 // Clockvariables
 uint32_t delay_time = 1000;  // 1000ms
@@ -67,12 +67,30 @@ uint32_t bt_timereleased = 0;
 uint32_t bt_deltatime = 0;
 
 // Statecontrol variables
-uint8_t state = 1;
+uint8_t state = 0;
 bool run = false;
 
 bool buttonPress = false;
 bool led_state = false;
 volatile int freq = 1720;
+
+int line;
+char Menu_one[] = "MAIN MENU";
+// Constants:-
+char Item_0[15];
+char Item_1[15];
+char Item_2[15];
+char Item_3[15];
+char Item_4[15];
+char Item_5[15];
+char Item_6[15];
+char Item_7[15];
+const byte numChars = 16;
+const char origArray[][16] = {"> Exit", "> Settings", "> Encodertest", "> LED_state:", "> Clock" };
+int *p;
+//p = &origArray[];
+
+//strcpy(Item_0[14], "Mainmenu");
 
 //Perhaps the following 2 lines are required for the Pico?  Or use 4,5 instead of (6u), (7u)?
 //#define PIN_WIRE_SDA   (21u)
@@ -153,7 +171,7 @@ void setup() {
 void loop() {
   // Clock
   uhr();
-  statecontrol();
+  //statecontrol();
   // Rotaryevent ?
   if (rt_mov) {
     Serial.print("Encoder ist rt_cw: ");
@@ -161,14 +179,17 @@ void loop() {
     Serial.print(" , rt_ccw:   ");
     Serial.print(rt_ccw);
     Serial.print(" , rt_inc:  ");
-    Serial.println(rt_inc);
-    Serial.println(freq);
+    Serial.print(rt_inc);
+    Serial.print("Menuitem :");
+    Serial.print(menuitem);
+    Serial.print("  state :");
+    Serial.println(state );
     rt_mov = false;
   }
   //Eventhandling();
   Eventhandling_new();
   //menu_new();
-  statecontrol();
+//  statecontrol();
   program_control();
 }
 
@@ -214,12 +235,64 @@ void display_Clock() {
 
 void program_control() {
   switch(state){
+    case 0:
+    // display clock shortpress calls Mainmenu 
+    display_Clock(); 
+    if (bt_shortpress){
+      state = 1;
+      bt_shortpress = false;
+    }
+    break;
     case 1:
-    display_Clock();
-    break;
-    case 2:
     menu_new();
+    // display Mainmenu  
+    if (bt_shortpress){
+      state = menuitem;
+      bt_shortpress = false;
+      //digit = 1;
+      Serial.println(state);
+    } 
+    if (bt_longpress){
+      state = 3;
+      page = 4;
+      bt_longpress = false;
+      //digit = 1;
+      Serial.println(state);
+    } 
+    if (rt_right){
+      rt_right = false;
+      menuitem ++;
+      if (menuitem == 5) { menuitem = 0; }
+    }
+    if (rt_left){
+      rt_left = false;
+      menuitem --;
+      if (menuitem == -1) { menuitem = 4; }
+    }    
     break;
+
+    case 2:
+    if (bt_longpress){
+      bt_longpress = false;
+      state = 0;
+    }
+    break;
+
+    case 3:
+    if (bt_longpress){
+      bt_longpress = false;
+      state = 0;
+    }
+    break;
+
+    case 4:
+    if (bt_longpress){
+      bt_longpress = false;
+      state = 0;
+    }
+    break;      
+
+
   }
 }
 
@@ -235,27 +308,50 @@ void menu_new() {
     display.setCursor(15, 0);
     display.print("MAIN MENU");
     display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
-    display.setCursor(0, 15);
-    if (menuitem == 1) {display.setTextColor(BLACK, WHITE);}
-    display.print("> Settings");
-    display.setCursor(0, 25);
-    display.setTextColor(SSD1306_WHITE);
-    if (menuitem == 2) {display.setTextColor(BLACK, WHITE);}
-    display.print("> Test Encoder");
-    display.setTextColor(SSD1306_WHITE);
-    if (menuitem == 3) {display.setTextColor(BLACK, WHITE);}
-        display.setCursor(0, 35);
-    display.print("> LED_state:");
-    if (led_state) {
-      display.print("ON");
-    } else {
-      display.print("OFF");
-    }
-    display.setTextColor(SSD1306_WHITE);
-    if (menuitem == 4) {display.setTextColor(BLACK, WHITE);} 
-    display.setCursor(0, 45);
-    display.print("> Clock");
-    display.setTextColor(SSD1306_WHITE);
+    // Items Display can display 5 Items + Title
+    line = 15;
+    for (int item = 0; item <=4 ; item++){
+      display.setCursor(0, line);
+      if (menuitem == item) {
+        display.setTextColor(BLACK, WHITE);
+        }
+      else {
+      display.setTextColor(SSD1306_WHITE);  
+      }  
+      display.print(origArray[item]);
+      line = line + 10;
+    } 
+
+    // display.setCursor(0, 15);
+    // if (menuitem == 0) {display.setTextColor(BLACK, WHITE);}
+    // //display.print("> Exit");
+    // display.print(origArray[0]);
+    // display.setCursor(0, 25);
+    // display.setTextColor(SSD1306_WHITE);
+    // if (menuitem == 1) {display.setTextColor(BLACK, WHITE);}
+    // //display.print("> Settings");
+    // display.print(origArray[1]);
+    // display.setTextColor(SSD1306_WHITE);
+    // if (menuitem == 2) {display.setTextColor(BLACK, WHITE);}
+    //     display.setCursor(0, 35);
+    // //display.print("> Test Encoder");
+    // display.print(origArray[2]);
+    // display.setTextColor(SSD1306_WHITE);
+    // if (menuitem == 3) {display.setTextColor(BLACK, WHITE);} 
+    // display.setCursor(0, 45);
+    // //display.print("> LED_state:");
+    // display.print(origArray[3]);
+    // if (led_state) {
+    //   display.print("ON");
+    // } else {
+    //   display.print("OFF");
+    // }
+    // display.setTextColor(SSD1306_WHITE);
+    // if (menuitem == 4) {display.setTextColor(BLACK, WHITE);} 
+    // display.setCursor(0, 55);
+    // //display.print("> Clock");
+    // display.print(origArray[4]);
+    // display.setTextColor(SSD1306_WHITE);    
     break;
 
     case 2:
@@ -410,7 +506,7 @@ void Eventhandling_new(){
     tone(8,1000,50);
   }
   
-  // in case of bt releas delta T is calculated 
+  // in case of bt_releas delta T is calculated 
   // short- and longpress are determinated
   if (bt_releas) {
     bt_timereleased = millis();
@@ -429,7 +525,9 @@ void Eventhandling_new(){
 
 void statecontrol(){
   switch(state){
-    case 1:  // display clock
+    // display clock shortpress calls Mainmenu  
+    case 1: 
+    // display clock shortpress calls Mainmenu  
     if (bt_shortpress){
       state = 2;
       bt_shortpress = false;
@@ -437,7 +535,8 @@ void statecontrol(){
     }
     break;
 
-    case 2:  // display Mainmenu
+    case 2:
+    // display Mainmenu  
     if (bt_shortpress){
       state = 1;
       bt_shortpress = false;
@@ -454,12 +553,12 @@ void statecontrol(){
     if (rt_right){
       rt_right = false;
       menuitem ++;
-      if (menuitem == 5) { menuitem = 1; }
+      if (menuitem == 5) { menuitem = 0; }
     }
     if (rt_left){
       rt_left = false;
       menuitem --;
-      if (menuitem == 0) { menuitem = 4; }
+      if (menuitem == -1) { menuitem = 4; }
     }    
     break;
 
@@ -535,5 +634,9 @@ void statecontrol(){
         //bz_activ = false;
       }
     }
+  if (bt_shortpress){
+    bt_shortpress = false;
+    Serial.println(state); 
+  }  
   }   
 
