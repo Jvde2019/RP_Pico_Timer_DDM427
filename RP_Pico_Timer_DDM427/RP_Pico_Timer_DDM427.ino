@@ -44,16 +44,6 @@ volatile byte rt_inc = 0;
 volatile uint8_t rt_a = 0;
 volatile uint8_t rt_b = 0;
 
-//volatile boolean rt_irdir = false;
-//volatile byte ccw = 0;
-//volatile byte cw = 0;
-//volatile byte inc = 0;
-//bool rm = false;
-//volatile uint8_t a = 0;
-//volatile uint8_t b = 0;
-//volatile boolean right = false;
-//volatile boolean left = false;
-
 // Button variables
 bool bt_mov = false;
 volatile boolean bt_irDir = false;
@@ -75,6 +65,8 @@ bool led_state = false;
 volatile int freq = 1720;
 
 int line;
+int startitem = 0;
+int enditem;
 char Menu_one[] = "MAIN MENU";
 // Constants:-
 char Item_0[15];
@@ -86,7 +78,7 @@ char Item_5[15];
 char Item_6[15];
 char Item_7[15];
 const byte numChars = 16;
-const char origArray[][16] = {"> Exit", "> Settings", "> Encodertest", "> LED_state:", "> Clock" };
+const char origArray[][16] = {"> Exit", "> Settings", "> Encodertest", "> LED_state:", "> Clock", "> Item_6", "> Item_7", "> Item_8", "> Item_9"};
 int *p;
 //p = &origArray[];
 
@@ -262,12 +254,32 @@ void program_control() {
     if (rt_right){
       rt_right = false;
       menuitem ++;
-      if (menuitem == 5) { menuitem = 0; }
+      // Check if we have Display to shift 
+      if (menuitem > 4) {
+        startitem = menuitem - 4;
+        }
+      else{
+        startitem = 0;
+      } 
+      // Check if last item 
+      if (menuitem == 9) {
+        menuitem = 0; 
+        startitem = 0;
+        }
     }
     if (rt_left){
       rt_left = false;
       menuitem --;
-      if (menuitem == -1) { menuitem = 4; }
+      if (menuitem > 4) {
+        startitem = menuitem - 4;
+        }
+      else {
+        startitem = 0;
+      }  
+      if (menuitem == -1) { 
+        menuitem = 8; 
+        startitem = menuitem -4;
+        }
     }    
     break;
 
@@ -290,10 +302,28 @@ void program_control() {
       bt_longpress = false;
       state = 0;
     }
-    break;      
-
-
+    break;  
   }
+}
+
+void makemenu(int &startitem, int &menuitem){
+  // Items Display can display 5 Items [0..4] + Title
+    line = 15;
+    //startitem = 0;
+    enditem = startitem + 4;
+
+    for (int item = startitem; item <= enditem ; item++){
+      display.setCursor(0, line);
+      if (menuitem == item) {
+        display.setTextColor(BLACK, WHITE);
+        }
+      else {
+      display.setTextColor(SSD1306_WHITE);  
+      }  
+      display.print(origArray[item]);
+      line = line + 10;
+    } 
+
 }
 
 // Create Menu Pages handle Rotary & Buttonpres Events
@@ -308,50 +338,24 @@ void menu_new() {
     display.setCursor(15, 0);
     display.print("MAIN MENU");
     display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
-    // Items Display can display 5 Items + Title
-    line = 15;
-    for (int item = 0; item <=4 ; item++){
-      display.setCursor(0, line);
-      if (menuitem == item) {
-        display.setTextColor(BLACK, WHITE);
-        }
-      else {
-      display.setTextColor(SSD1306_WHITE);  
-      }  
-      display.print(origArray[item]);
-      line = line + 10;
-    } 
+    
+    makemenu(startitem, menuitem);
+    // // Items Display can display 5 Items [0..4] + Title
+    // line = 15;
+    // //startitem = 0;
+    // enditem = startitem + 4;
 
-    // display.setCursor(0, 15);
-    // if (menuitem == 0) {display.setTextColor(BLACK, WHITE);}
-    // //display.print("> Exit");
-    // display.print(origArray[0]);
-    // display.setCursor(0, 25);
-    // display.setTextColor(SSD1306_WHITE);
-    // if (menuitem == 1) {display.setTextColor(BLACK, WHITE);}
-    // //display.print("> Settings");
-    // display.print(origArray[1]);
-    // display.setTextColor(SSD1306_WHITE);
-    // if (menuitem == 2) {display.setTextColor(BLACK, WHITE);}
-    //     display.setCursor(0, 35);
-    // //display.print("> Test Encoder");
-    // display.print(origArray[2]);
-    // display.setTextColor(SSD1306_WHITE);
-    // if (menuitem == 3) {display.setTextColor(BLACK, WHITE);} 
-    // display.setCursor(0, 45);
-    // //display.print("> LED_state:");
-    // display.print(origArray[3]);
-    // if (led_state) {
-    //   display.print("ON");
-    // } else {
-    //   display.print("OFF");
-    // }
-    // display.setTextColor(SSD1306_WHITE);
-    // if (menuitem == 4) {display.setTextColor(BLACK, WHITE);} 
-    // display.setCursor(0, 55);
-    // //display.print("> Clock");
-    // display.print(origArray[4]);
-    // display.setTextColor(SSD1306_WHITE);    
+    // for (int item = startitem; item <= enditem ; item++){
+    //   display.setCursor(0, line);
+    //   if (menuitem == item) {
+    //     display.setTextColor(BLACK, WHITE);
+    //     }
+    //   else {
+    //   display.setTextColor(SSD1306_WHITE);  
+    //   }  
+    //   display.print(origArray[item]);
+    //   line = line + 10;
+    // } 
     break;
 
     case 2:
