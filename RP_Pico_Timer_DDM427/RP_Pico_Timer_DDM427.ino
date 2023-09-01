@@ -69,18 +69,23 @@ int startitem = 0;
 int enditem;
 char Menu_one[] = "MAIN MENU";
 // Constants:-
-char Item_0[15];
-char Item_1[15];
-char Item_2[15];
-char Item_3[15];
-char Item_4[15];
-char Item_5[15];
-char Item_6[15];
-char Item_7[15];
+// char Item_0[15];
+// char Item_1[15];
+// char Item_2[15];
+// char Item_3[15];
+// char Item_4[15];
+// char Item_5[15];
+// char Item_6[15];
+// char Item_7[15];
+//Mainmenu
 const byte numChars = 16;
-const char origArray[][16] = {"> Exit", "> Settings", "> Encodertest", "> LED_state:", "> Clock", "> Item_6", "> Item_7", "> Item_8", "> Item_9"};
+const char mmArray[][16] = {"> Exit", "> Settings", "> Encodertest", "> LED_state:", "> Clock", "> Item_6", "> Item_7", "> Item_8", "> Item_9"};
 int *p;
-//p = &origArray[];
+//Mainmenu
+//const byte numChars = 16;
+const char smArray[][16] = {"> Exit", "> sSettings", "> sEncodertest", "> sLED_state:", "> sClock", "> sItem_6", "> sItem_7", "> sItem_8", "> sItem_9"};
+
+//p = &mmArray[][];
 
 //strcpy(Item_0[14], "Mainmenu");
 
@@ -306,21 +311,23 @@ void program_control() {
   }
 }
 
-void makemenu(int &startitem, int &menuitem){
+//void makemenu(int &startitem, int &menuitem, char c[]){
+void makemenu(int &a, int &b, const char (&c)[][numChars]){    
   // Items Display can display 5 Items [0..4] + Title
     line = 15;
     //startitem = 0;
-    enditem = startitem + 4;
+    enditem = a + 4;
 
-    for (int item = startitem; item <= enditem ; item++){
+    for (int item = a; item <= enditem ; item++){
       display.setCursor(0, line);
-      if (menuitem == item) {
+      if (b == item) {
         display.setTextColor(BLACK, WHITE);
         }
       else {
       display.setTextColor(SSD1306_WHITE);  
       }  
-      display.print(origArray[item]);
+      //display.print(mmArray[item]);
+      display.print(c[item]);
       line = line + 10;
     } 
 
@@ -339,7 +346,7 @@ void menu_new() {
     display.print("MAIN MENU");
     display.drawLine(10, 10, 73, 10, SSD1306_WHITE);
     
-    makemenu(startitem, menuitem);
+    makemenu(startitem, menuitem, smArray);
     // // Items Display can display 5 Items [0..4] + Title
     // line = 15;
     // //startitem = 0;
@@ -353,7 +360,7 @@ void menu_new() {
     //   else {
     //   display.setTextColor(SSD1306_WHITE);  
     //   }  
-    //   display.print(origArray[item]);
+    //   display.print(mmArray[item]);
     //   line = line + 10;
     // } 
     break;
